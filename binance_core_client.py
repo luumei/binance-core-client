@@ -9,6 +9,7 @@ This is the main module that integrates all sub-modules for:
 - Spot trading
 - Margin trading
 - Futures trading
+- Public data management
 - Utility functions (Utils)
 
 Features:
@@ -27,11 +28,13 @@ client = BinanceCoreClient(
     proxy_list=[],
     testnet=True
 )
+"""
 
 from proxy_manager import ProxyManager
 from spot_trading import SpotTrading
 from margin_trading import MarginTrading
 from futures_trading import FuturesTrading
+from public_data_manager import PublicDataManager
 from utils import Utils
 
 
@@ -61,6 +64,9 @@ class BinanceCoreClient:
         self.spot_trading = SpotTrading(api_key, api_secret, self.session, self.base_url_spot)
         self.margin_trading = MarginTrading(api_key, api_secret, self.session, self.base_url_spot)
         self.futures_trading = FuturesTrading(api_key, api_secret, self.session, self.base_url_futures)
+
+        # Initialize public data manager
+        self.public_data = PublicDataManager()
 
         # Utilities
         self.utils = Utils()
