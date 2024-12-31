@@ -135,3 +135,67 @@ class PublicDataManager:
         df.set_index('open_time', inplace=True)
         df.sort_index(inplace=True)
         return df
+        
+    def get_spot_order_book(self, symbol: str, limit=100) -> dict:
+        """
+        Retrieve the order book for a given symbol from the Spot market.
+
+        Parameters:
+            symbol (str): The trading symbol (e.g., 'BTCUSDT').
+            limit (int): The number of orders to retrieve from the order book (default is 100).
+
+        Returns:
+            dict: The order book data if successful, None otherwise.
+        """
+        return self._fetch_order_book(symbol=symbol, limit=limit, is_futures=False, testnet=False)
+
+    def get_futures_order_book(self, symbol: str, limit=100, testnet=False) -> dict:
+        """
+        Retrieve the order book for a given symbol from the Futures market.
+
+        Parameters:
+            symbol (str): The trading symbol (e.g., 'BTCUSDT').
+            limit (int): The number of orders to retrieve from the order book (default is 100).
+            testnet (bool): Whether to use the testnet for Futures (default is False).
+
+        Returns:
+            dict: The order book data if successful, None otherwise.
+        """
+        return self._fetch_order_book(symbol=symbol, limit=limit, is_futures=True, testnet=testnet)
+
+    def _fetch_order_book(self, symbol: str, limit=100, is_futures=False, testnet=False) -> dict:
+        """
+        Fetches the order book for a given symbol from Spot or Futures market.
+
+        Parameters:
+            symbol (str): The trading symbol (e.g., 'BTCUSDT').
+            limit (int): The number of orders to retrieve from the order book (default is 100).
+            is_futures (bool): Whether the market is Futures or Spot.
+            testnet (bool): Whether to use the testnet for Futures (default is False).
+
+        Returns:
+            dict: The order book data if successful, None otherwise.
+        """
+        try:
+            # Set the base URL and endpoint
+            if is_futures:
+                base_url = "https://testnet.binancefuture.com" if testnet else "https://fapi.binance.com"
+                endpoint = '/fapi/v1/depth'
+            else:
+                base_url = "https://api.binance.com"
+                endpoint = '/api/v3/depth'
+
+            # Make the API request
+            response = requests.get(base_url + endpoint, params={'symbol': symbol, 'limit': limit})
+
+            # Handle the response
+            if response.status_code == 200:
+                return response.json()
+            else:
+                print(f'Error fetching order book. Status code: {response.status_code}')
+                print(f'Response content: {response.content}')
+                return None
+
+        except Exception as e:
+            print(f"Error fetching order book for symbol {symbol}. Exception: {e}")
+            return None
